@@ -1,49 +1,35 @@
-import mongoose from 'mongoose';
-import { logger } from '../utils/logger';
+import mongoose from "mongoose";
 
-/**
- * Connect to MongoDB with retry logic
- */
-export const connectDB = async (): Promise<void> => {
-  const MONGO_URI = process.env.MONGO_URI as string;
+const MONGO_URI = process.env.MONGO_URI as string;
 
-  if (!MONGO_URI) {
-    logger.error('MONGO_URI is not defined in environment variables');
-    process.exit(1);
+if (!MONGO_URI) {
+  throw new Error("MONGO_URI is not defined in environment variables");
+}
+
+// cache connection in global (VERY IMPORTANT for Vercel)
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+export const connectDB = async () => {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGO_URI, {
+      bufferCommands: false,
+    });
   }
 
-  const options = {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-  };
-
-  try {
-    const conn = await mongoose.connect(MONGO_URI, options);
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
-
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      logger.error(`MongoDB connection error: ${err}`);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      logger.warn('MongoDB disconnected. Attempting to reconnect...');
-    });
-
-    mongoose.connection.on('reconnected', () => {
-      logger.info('MongoDB reconnected');
-    });
-  } catch (error) {
-    logger.error(`MongoDB connection failed: ${error}`);
-    process.exit(1);
-  }
+  cached.conn = await cached.promise;
+  return cached.conn;
 };
 
-/**
- * Gracefully close MongoDB connection
- */
-export const disconnectDB = async (): Promise<void> => {
-  await mongoose.connection.close();
-  logger.info('MongoDB connection closed');
+export const disconnectDB = async () => {
+  if (cached.conn) {
+    await mongoose.disconnect();
+    cached.conn = null;
+    cached.promise = null;
+  }
 };
