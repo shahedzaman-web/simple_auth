@@ -41,56 +41,11 @@ export const authenticate = asyncHandler(
       throw new AppError('The account belonging to this token no longer exists.', 401);
     }
 
-    if (user.isBlocked) {
-      throw new AppError('Your account has been suspended. Please contact support.', 403);
-    }
 
     req.user = user;
     next();
   },
 );
 
-/**
- * Authorize specific roles
- * Usage: authorize('super-admin', 'store')
- */
-export const authorize = (...roles: string[]) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      return next(new AppError('Authentication required.', 401));
-    }
 
-   
 
-    next();
-  };
-};
-
-/**
- * Optional authentication - attaches user if token present, doesn't throw if missing
- */
-export const optionalAuth = asyncHandler(
-  async (req: Request, _res: Response, next: NextFunction) => {
-    let token: string | undefined;
-
-    if (req.headers.authorization?.startsWith('Bearer ')) {
-      token = req.headers.authorization.split(' ')[1];
-    } else if (req.cookies?.accessToken) {
-      token = req.cookies.accessToken;
-    }
-
-    if (token) {
-      try {
-        const decoded = verifyAccessToken(token);
-        const user = await User.findById(decoded.id);
-        if (user && !user.isBlocked) {
-          req.user = user;
-        }
-      } catch {
-        // Silently fail for optional auth
-      }
-    }
-
-    next();
-  },
-);

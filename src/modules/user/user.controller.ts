@@ -11,7 +11,7 @@ const COOKIE_OPTIONS = {
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
- const userController = {
+const userController = {
     register: async (req: Request, res: Response) => {
         const result = await userService.register(req.body);
 

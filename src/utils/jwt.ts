@@ -3,7 +3,6 @@ import { Types } from 'mongoose';
 
 interface TokenPayload {
   id: string;
-  role: string;
   email: string;
 }
 
