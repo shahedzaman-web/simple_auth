@@ -12,7 +12,11 @@ interface IUser {
     emailVerificationOTP?: string;
     emailVerificationOTPExpiry?: Date;
 }
-
+interface IUserInput {
+    name: string;
+    email: string;
+    password: string;
+}
 
 const userService = {
     // User registration
