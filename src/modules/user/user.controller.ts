@@ -3,6 +3,18 @@ import userService from "./user.service";
 import { Request, Response } from 'express';
 import { generateTokenPair } from "../../utils/jwt";
 import { Types } from "mongoose";
+import { User } from "./user.model";
+import { generateOTP } from "../../utils/helper";
+
+
+
+interface IUserInput {
+    name: string;
+    email: string;
+    password: string;
+}
+
+
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
@@ -16,7 +28,8 @@ const userController = {
         const result = await userService.register(req.body);
 
         res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
-        return sendCreated(res, 'Registration successful. Please verify your email.', {
+
+        return sendCreated(res, "Registration successful. Please verify your email.", {
             user: result.user,
             accessToken: result.accessToken,
         });

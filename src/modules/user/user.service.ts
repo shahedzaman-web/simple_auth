@@ -16,28 +16,45 @@ interface IUser {
 
 const userService = {
     // User registration
-    register: async (input: IUser) => {
-        const existingUser = await User.findOne({ email: input.email.toLowerCase() });
+    register: async (input: IUserInput) => {
+        const email = input.email.toLowerCase();
+
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            throw new Error('Email already in use');
+            throw new Error("Email already in use");
         }
+
         const otp = generateOTP(6);
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
         const newUser = new User({
             name: input.name,
-            email: input.email.toLowerCase(),
+            email,
             password: input.password,
             emailVerificationOTP: otp,
             emailVerificationOTPExpiry: otpExpiry,
         });
+
         await newUser.save();
-        // Send verification email (non-blocking)
-        const template = emailTemplates.verification(newUser.name, otp);
-        sendEmail({ to: newUser.email, ...template }).catch((err) =>
-            logger.error(`Verification email failed: ${err}`),
+
+        // const template = emailTemplates.verification(newUser.name, otp);
+
+        // sendEmail({
+        //     to: newUser.email,
+        //     ...template,
+        // }).catch((err) => logger.error(`Verification email failed: ${err}`));
+
+        // 🔥 ADD TOKENS HERE
+        const { accessToken, refreshToken } = generateTokenPair(
+            newUser._id,
+            newUser.email
         );
 
-        return { user: newUser };
+        return {
+            user: newUser,
+            accessToken,
+            refreshToken,
+        };
     },
 
     // User login

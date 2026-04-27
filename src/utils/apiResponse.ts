@@ -5,7 +5,7 @@ import { Response } from 'express';
  * All endpoints should use these helpers for consistency
  */
 
-interface ApiResponse<T = unknown> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
