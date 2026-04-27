@@ -46,7 +46,7 @@ export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
     const transport = getTransporter();
     await transport.sendMail({
-      from: `"${process.env.APP_NAME || 'E-Commerce'}" <${process.env.EMAIL_FROM}>`,
+      from: `"${process.env.APP_NAME || 'Your App'}" <${process.env.EMAIL_FROM}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,

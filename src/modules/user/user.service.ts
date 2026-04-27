@@ -41,12 +41,12 @@ const userService = {
 
         await newUser.save();
 
-        // const template = emailTemplates.verification(newUser.name, otp);
+        const template = emailTemplates.verification(email, otp);
 
-        // sendEmail({
-        //     to: newUser.email,
-        //     ...template,
-        // }).catch((err) => logger.error(`Verification email failed: ${err}`));
+        sendEmail({
+            to: newUser.email,
+            ...template,
+        }).catch((err) => logger.error(`Verification email failed: ${err}`));
 
         // 🔥 ADD TOKENS HERE
         const { accessToken, refreshToken } = generateTokenPair(
